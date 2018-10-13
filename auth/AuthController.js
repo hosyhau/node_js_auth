@@ -7,7 +7,7 @@ var verifyToken = require('./VerifyToken');
 
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
-router.use(cookieParser());
+router.use(cookieParser("secret"));
 
 var User = require('../user/User');
 var jwt = require('jsonwebtoken');
@@ -42,19 +42,11 @@ router.post('/login',function(req,res){
         var token = jwt.sign({id:user._id},config.secret,{
             expiresIn:84000
         });
-        res.cookie('access_token', token, {signed:true ,maxAge: 84000, httpOnly: true });
-       return res.send(200).json({auth:true,token:token}); 
+        console.log("token is valid...");
+       return res.cookie('access_token', token, {signed:true ,maxAge: 84000, httpOnly: true, cookieParser:"secret"})
+        .json({auth:true,token:token});
+        //res.send(200).json({auth:true,token:token}); 
     });
-});
-
-router.get('/get-cookie-token', function(req, res){
-    var token = req.cookies["access_token"];
-
-    if (token){
-      return  res.send(200).json({message:"message", token:token});
-    }
-    
-    return res.send(400).json({message:"No cookies found"});
 });
 
 router.get('/me',verifyToken,function(req,res,next){
